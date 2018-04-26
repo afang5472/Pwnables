@@ -3,5 +3,6 @@
 *.out
 *.gdb*
 *peda*
+*nohup*
 core
 
