@@ -5,10 +5,10 @@ ways leading to become a pwnie~
 
 including:
 
-heap
-io\_file
-partial\_overwrite
-challs from Pwnable.Kr
-Seccomp\_filter
-Uninitialized\_Variable
-Windows\_Pwnable
+heap 
+io\_file 
+partial\_overwrite 
+challs from Pwnable.Kr 
+Seccomp\_filter 
+Uninitialized\_Variable 
+Windows\_Pwnable 
