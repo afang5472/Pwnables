@@ -1,0 +1,6 @@
+connect to port 9030 (nc 0 9030). the 'combabo_calculator' binary will be executed under combabo_calculator_pwn privilege.
+pwn it and get a shell and read the flag.
+* binary is not provided for this challenge (source code, Makefile is provided instead).
+* this challenge uses the given 'combabo.so.6' as LIBC (this is libc-dependant challenge)
+* challenge author: hdarwin (hdarwin89@gmail.com)
+
