@@ -17,4 +17,7 @@ This now including:
 - Windows\_Pwnable  
 - Reversing style pwnable
 
-
+My blog
+-----
+[afang.xyz](http://afang.xyz) 分享一些比较神奇的Pwnable~.  
+[canyouhugme.com](http://canyouhugme.com) Same refer~
