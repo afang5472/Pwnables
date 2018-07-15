@@ -1,14 +1,20 @@
 # how2pwn
 ways leading to become a pwnie~
 
-### Categorized by pwnable challenge types.
+What this repo do
+-----
 
-including:
+Intially, This repo categorizes pwnable challenges by chall types.
 
-heap 
-io\_file 
-partial\_overwrite 
-challs from Pwnable.Kr 
-Seccomp\_filter 
-Uninitialized\_Variable 
-Windows\_Pwnable 
+This now including:  
+
+- heap  
+- io\_file   
+- partial\_overwrite  
+- Solutions to challs at Pwnable.Kr  
+- Seccomp\_filter  
+- Uninitialized\_Variable  
+- Windows\_Pwnable  
+- Reversing style pwnable
+
+
