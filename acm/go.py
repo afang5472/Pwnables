@@ -20,9 +20,7 @@ env = ""
 LOCAL = 1
 context.log_level = "debug"
 
-p = process("./acm")
 
-p.sendline("8888") #Init rounds.
 
 #round x
 
@@ -37,10 +35,26 @@ def sort():
     p.sendline("2")
     return p.recv()
 
-for i in range(80):
+while 1:
 
-    create_str("a" * (random.randint(100,500)))
+    for i in range(10,100):
 
-pause()
-print sort()
-pause()
+        p = process("./acm")
+        p.sendline("9000") #Init rounds.
+        for j in range(i):
+            
+            create_str("a" * 100 * (i - j + 1))
+            pause()
+            sort()
+            pause()
+    try:
+        for x in range(10):
+            sort()
+        p.close()
+    except:
+        print i
+        print "critical"
+        wait('now')
+            
+
+

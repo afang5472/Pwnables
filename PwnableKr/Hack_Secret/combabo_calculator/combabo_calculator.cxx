@@ -12,7 +12,7 @@ enum struct T:char { END, INT, PLUS, MINUS, MUL, DIV, LP, RP, ID, ASSIGN, EXIT, 
 typedef struct Token {
     char* checksum;
     char* str;
-    union {
+    union { //wait, it's a union structure?.
         int size;
         int value;
     };
@@ -31,31 +31,31 @@ class Lexer {
     pToken readStr();
     pToken readDigit();
 public:
-    Lexer(string &input) : pos(0), input(input) {};
+    Lexer(string &input) : pos(0), input(input) {}; //pos is initial str index poi.
     pToken nToken();
 };
 
-pToken Lexer::readDigit() {
+pToken Lexer::readDigit() { //this function will read until non-digit meet. -- 12345a
     auto i = 0;
     while (isdigit(input[pos])) i = i * 10 + input[pos++] - '0';
     if (i > 256) throw "does not support integer bigger than 256";
-    return new Token(T::INT, i);;
+    return new Token(T::INT, i); //assign a Token object with Type:INT & value int.
 };
 
 pToken Lexer::readId() {
     auto limit = 0;
     auto start = pos;
-    while (isalnum(input[pos++])) if (++limit > 256) throw "does not support ID longer than 256";
+    while (isalnum(input[pos++])) if (++limit > 256) throw "does not support ID longer than 256"; //id is alphanum less than 256.
     if (!strncmp("exit", input.substr(start, pos--).c_str(), 4)) return new Token(T::EXIT);
-    char* str = (char*)calloc(pos - start + 1, 1);
+    char* str = (char*)calloc(pos - start + 1, 1); //alloc a space for ID str.
     if (!str) throw "Internal Error";
     strncpy(str, input.substr(start, pos).c_str(), pos - start);
-    return new Token(T::ID, str);
+    return new Token(T::ID, str); //with a type and a value.
 };
 
 pToken Lexer::readStr() {
     auto limit = 0;
-    auto start = ++pos;
+    auto start = ++pos; // ++ bypassed the first ".
     while (input[pos++] != '"') if (++limit > 256) throw "does not support string longer than 256";
     --pos;
     char* str = (char*)calloc(pos - start + 1, 1);
@@ -64,23 +64,23 @@ pToken Lexer::readStr() {
     return new Token(T::STR, str);
 };
 
-pToken Lexer::nToken() {
-    while (input[pos] == ' ') pos++;
-    if (pos == input.length()) return new Token(T::END);
-    if (isdigit(input[pos])) return readDigit();
-    if (isalpha(input[pos])) return readId();
-    if (input[pos] == '+') return new Token(T::PLUS, input[pos++]);
-    if (input[pos] == '-') return new Token(T::MINUS, input[pos++]);
-    if (input[pos] == '*') return new Token(T::MUL, input[pos++]);
-    if (input[pos] == '/') return new Token(T::DIV, input[pos++]);
-    if (input[pos] == '(') return new Token(T::LP, input[pos++]);
-    if (input[pos] == ')') return new Token(T::RP, input[pos++]);
-    if (input[pos] == '"') return readStr();
+pToken Lexer::nToken() { //nextToken?.
+    while (input[pos] == ' ') pos++; //space splited.. if space , move on, if not, process.
+    if (pos == input.length()) return new Token(T::END); // if reach to the end.
+    if (isdigit(input[pos])) return readDigit(); //if meet first digit.
+    if (isalpha(input[pos])) return readId(); //if meet first alpha.
+    if (input[pos] == '+') return new Token(T::PLUS, input[pos++]);  //
+    if (input[pos] == '-') return new Token(T::MINUS, input[pos++]); //
+    if (input[pos] == '*') return new Token(T::MUL, input[pos++]);   //
+    if (input[pos] == '/') return new Token(T::DIV, input[pos++]);   //
+    if (input[pos] == '(') return new Token(T::LP, input[pos++]);    //
+    if (input[pos] == ')') return new Token(T::RP, input[pos++]);    //
+    if (input[pos] == '"') return readStr(); //meet with string.
     if (input[pos] == '=') return new Token(T::ASSIGN, input[pos++]);
     throw "Lexer Error";
 };
 
-struct Node {
+struct Node { //Node is sth. contains a token and a children node vector.
     shared_ptr<Token>token;
     vector<shared_ptr<Node>>children;
     Node(sToken token) : token(token) {};
@@ -88,8 +88,8 @@ struct Node {
 using sNode = shared_ptr<Node>;
 
 class Parser {
-    shared_ptr<Lexer> lexer;
-    shared_ptr<Token> cur;
+    shared_ptr<Lexer> lexer; //pointing to a lexer object with input initialized.
+    shared_ptr<Token> cur; // assigned with lexer->nToken return value.
     void next(T);
     sNode factor();
     sNode term();
@@ -101,7 +101,7 @@ public:
 };
 
 void Parser::next(T type) {
-    if (cur->type == type) cur.reset(lexer->nToken());
+    if (cur->type == type) cur.reset(lexer->nToken()); //If cur->type is expected, cur update token.
     else throw "Parser Error";
 };
 
@@ -109,10 +109,10 @@ sNode Parser::factor() {
     auto node = make_shared<Node>(cur);
     auto osNode = make_shared<Node>(cur);
     switch (cur->type) {
-        case T::LP:
+        case T::LP: //(
             next(T::LP);
             node = expr();
-            next(T::RP);
+            next(T::RP); //)
         break;
         case T::PLUS:
         case T::MINUS:
@@ -182,7 +182,7 @@ sNode Parser::assign() {
 };
 
 sNode Parser::parse() {
-    auto result = assign();
+    auto result = assign(); // start parsing , finish right if cur->type != T::END
     if (cur->type != T::END) throw "Parser Error";
     return result;
 };
@@ -193,7 +193,7 @@ static struct Symbol {
     Symbol* next;
     Symbol(){};
     Symbol(char *str, sToken token) : token(token) {
-        id = (char*) calloc(strlen(str) + 1, 1);
+        id = (char*) calloc(strlen(str) + 1, 1); //Calloc an identifier as Symbol.
         if (!id) throw "Internal Error";
         strcpy(id, str);
     };
@@ -254,7 +254,7 @@ sToken Calc::visitor(sNode node) {
      throw "Syntax Error";
 };
 
-sToken Calc::visitUnaryOp(sNode node) {
+sToken Calc::visitUnaryOp(sNode node) {  //Plus or Minus.
     auto result = 0;
     auto op = visitor(node->children[0]);
     if (op->type == T::INT) result = op->value;
@@ -263,7 +263,7 @@ sToken Calc::visitUnaryOp(sNode node) {
     return make_shared<Token>(T::INT, node->token->type == T::UPLUS ? +op->value : -op->value);
 };
 
-sToken Calc::visitBinaryOp(sNode node) {
+sToken Calc::visitBinaryOp(sNode node) { //+,-,*,/
     auto left = 0;
     auto right = 0;
     auto leftToken = visitor(node->children[0]);
@@ -284,10 +284,10 @@ sToken Calc::visitBinaryOp(sNode node) {
     exit(0);
 };
 
-sToken Calc::visitId(sNode node) {
+sToken Calc::visitId(sNode node) { // find target id to access.
     sToken result = nullptr;
     auto symbol = &SymTab;
-    while (symbol->next != &SymTab) {
+    while (symbol->next != &SymTab) {  //find target Symbol ID until searching the whole linked list.
         symbol = symbol->next;
         if (!strncmp(node->token->str, symbol->id, strlen(symbol->id))) {
             result = symbol->token;
@@ -298,22 +298,22 @@ sToken Calc::visitId(sNode node) {
 };
 
 sToken Calc::visitAssign(sNode node) {
-    auto var = node->children[0];
+    auto var = node->children[0]; //This Procedure assign child[1] to child[0].
     auto value = visitor(node->children[1]);
     if (var->token->type != T::ID || !value) throw "Syntax Error";
-    if (auto variable = visitId(var)) {
-        if (variable->type == T::STR && value->type == T::STR) {
+    if (auto variable = visitId(var)) { // if visited ID exists,
+        if (variable->type == T::STR && value->type == T::STR) { // if both string.
             if (variable->size < value->size) variable->str = (char*)realloc(variable->str, value->size + 1);
             if (!variable->str) throw "Internal Error";
             variable->checksum = variable->str;
-            variable->size = strlen(variable->str);
+            variable->size = strlen(variable->str); //wait.. the size hasn't been updated..?
             strcpy(variable->str, value->str);
         } else if (variable->type == T::INT && value->type == T::STR) variable->value = atoi(value->str);
         else variable->value = value->value;
-    } else {
+    } else { //create a new variable.
         auto symbol = &SymTab;
         while (symbol->next != &SymTab) symbol = symbol->next;
-        symbol->next = new Symbol(var->token->str, value);
+        symbol->next = new Symbol(var->token->str, value); // a variable is a symbol..
         symbol->next->next = &SymTab;
     }
     return value;

