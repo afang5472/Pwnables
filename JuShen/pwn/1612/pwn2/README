@@ -1,0 +1,18 @@
+=== AI as a server ===
+
+The author have accumulated an adequate amount of C++ codes, and taking one out as a pwning challenge is easy. The hard part is to solve it. An unsolvable challenge is of no value, and so is a trivially solved challenge.
+
+The idea for the challenge (at least, the intended solution) is so interesting that XNUCA has adopted this trick in one of its hardest challenges in the coming week. (Yes, I feel honored for that.)
+
+However, I believe that if it is you guys, then it will be solved eventually.
+
+TRIVIA:
+
+As you might expect, you can actually run this and it will terrifyingly match with the oj (that is, having full 1000 scores on every test case):
+
+socat EXEC:"./oj 0" EXEC:"./aipf"
+socat EXEC:"./oj 1" EXEC:"./aipf"
+socat EXEC:"./oj 2" EXEC:"./aipf"
+socat EXEC:"./oj 3" EXEC:"./aipf"
+
+where ./oj is the OJ for the XNUCA challenge in October, named pattern-finder.

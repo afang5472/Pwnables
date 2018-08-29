@@ -1,0 +1,8 @@
+=== Assignment ===
+
+The course 'Object Oriented Programming' has received a good reputation for its low difficulty of getting an A. However, if you made the name wrong, you would have a hard time.
+Our poor John has accidentally taken a VERY-DIFFICULT programming language course named 'Return Oriented Programming'. He never knows how to program using return oriented programming language. What he knows is only that, given enough gadgets, anything can be done! Now he is asking for your help on an exercise problem:
+
+$$      CHAPTER 4   CONTROL FLOW      $$
+
+EXERCISE 4.1: Design a function that can compute the multiplicative inverse of a integer $a$ modulo another larger integer $N$, which means, the unique number $b$ that satisfies $a\times b == k*N+1$. The existence of such $b$ is ensured in given $a$ and $N$.

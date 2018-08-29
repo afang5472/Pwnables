@@ -1,0 +1,7 @@
+=== Mtplayer ===
+
+You cannot pwn well if you cannot play well, even if you have one of the easiest vulnerabilities - buffer overflow on stack.
+
+NOTE:
+
+The 'mtstat.cpp' and 'mtstat.h' are original, and have been released in multiple forms in IIE. You are supposed to have these two source files along when doing challenges about MY MT PLATFORM. Also it should be noted here that, because of the troublesome restrictions of the mt game itself, it won't be very easy to make the program not to crash before you get the shell, making the two files extremely useful.

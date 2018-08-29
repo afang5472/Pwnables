@@ -1,0 +1,13 @@
+=== Crazy fxxkheap ===
+
+* The traffic provided in the course of April CTF is buggy (packet loss makes it not easy to solve the challenge). I regenerate the traffic to make it (hopefully) solvable. However, no one had solved the challenge in the course, which is unrelated to the bug. *
+
+This is one of the classical traffic analysis challenges. Could you believe it?
+
+Give me back the flag that our acquaintance stole from me!
+
+CLARIFICATION:
+
+1. By "the flag that was stolen", the challenge means the flag residing in the remote gamebox, aka /home/player/flag. It is equivalent to the case when you had the server and managed to make it execve("/bin/sh", {"/bin/sh", 0}, 0); and typed "cat flag" in the remote shell.
+
+2. The traffic is generated from a REAL exp script. Be reasonable!
