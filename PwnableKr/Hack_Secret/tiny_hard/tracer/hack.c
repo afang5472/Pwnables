@@ -13,10 +13,7 @@
 
 int main(){
 
-	getchar();
-	char *b = "/bin/sh";
-	printf("%s\n", b);
-	printf("%lx\n",ptrace(PTRACE_TRACEME, 0,0,0));
+	ptrace(PTRACE_TRACEME, 0,0,0);
 	int a;
 	scanf("%d", a);
 	//raise(SIGSTOP);

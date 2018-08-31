@@ -11,6 +11,8 @@
 //author : afang
 //comment: what a nice day, isn't it?!
 
+unsigned int syscall_addr = 0;
+
 int main(int argc, char *argv[]){
 
 	char *filename = argv[1];
@@ -20,7 +22,10 @@ int main(int argc, char *argv[]){
 	int switcher = 0;
 	int single = 0;
 	
-	pid_t child_pid = fork();
+	for(int i=0; i < 10240; i++){
+
+		pid_t child_pid = fork();
+	}
 	if(child_pid == 0){
 	/*	if(ptrace(PTRACE_TRACEME, 0, 0, 0) < 0) {
 			perror("ptrace failed.");
@@ -43,41 +48,76 @@ int main(int argc, char *argv[]){
 		scanf("%d", &flager);
 		getchar();
 		
-		if(flager == 1 && single == 0){
+		unsigned int syscall_eip = 0;
+		if(flager == 0 && single == 0){
 			puts("try setting regs..");
-			//set regs and memory to execve.
 	
-			ptrace(PTRACE_POKETEXT, child_pid, regs.esp, 0x6e69622f); //int 0x80
-			ptrace(PTRACE_POKETEXT, child_pid, regs.esp + 4 , 0x68732f);//bin/sh
-
-		
-			//control to execve.
-			regs.eax = 0xb;
-			regs.ebx = 0x80bbc68;
-			regs.ecx = 0;
-			regs.edx = 0;
+			//control to read in.
+			regs.eax = 0x3; //read syscall.
+			regs.ebx = 0;
+			regs.ecx = regs.esp;
+			regs.edx = 0x4;
 
 			puts("syscall?");
-			unsigned int syscall_eip = 0;
 			scanf("%u", &syscall_eip);
 			regs.eip = syscall_eip + 0xbc6;
-			single = 0;
+			syscall_addr = regs.eip;
+			single = 1;
 
 			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs); //test control eip.
 			ptrace(PTRACE_GETREGS, child_pid, NULL, &regs); //show if last worked.
-			printf("before execve, eax: %lx\n", regs.eax);
-			printf("before execve, ebx: %lx\n", regs.ebx);
-			printf("before execve, ecx: %lx\n", regs.ecx);
-			printf("before execve, edx: %lx\n", regs.edx);
+			printf("before read, eax: %lx\n", regs.eax);
+			printf("before read, ebx: %lx\n", regs.ebx);
+			printf("before read, ecx: %lx\n", regs.ecx);
+			printf("before read, edx: %lx\n", regs.edx);
 			printf("eip is now at: %lx\n", regs.eip);	
-
-			unsigned int sh_text = ptrace(PTRACE_PEEKTEXT, child_pid, regs.esp ,NULL);
-			printf("%d\n", sh_text);
 
 			puts("go?");
 			getchar();
 			getchar();
 		}
+
+		//Single Step going.
+	if(flager == 1 && single == 1){
+
+			printf("execution reach before open.\n");
+			unsigned int input = ptrace(PTRACE_PEEKTEXT, child_pid, regs.esp, NULL);
+			printf("our input: %x\n", input);
+			
+			//Set new args.
+			regs.eax = 0x5; //open syscall.
+			regs.ebx = regs.esp;
+			regs.ecx = 0;
+			regs.edx = 0;
+			regs.eip = syscall_addr;
+			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);
+		}
+
+	if(flager == 2 && single == 1){
+
+			//Set new args.
+			regs.ebx = regs.eax;
+			regs.eax = 0x3; //read syscall.
+			regs.ecx = regs.esp;
+			regs.edx = 0x50;
+			regs.eip = syscall_addr;
+			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);
+		}
+
+	if(flager == 3 && single == 1){
+
+			//Set new args.
+			regs.eax = 0x4; //write syscall.
+			regs.ebx = 0x1;
+			regs.ecx = regs.esp;
+			regs.edx = 0x50;
+			regs.eip = syscall_addr;
+			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);
+		}
+
+		ptrace(PTRACE_SINGLESTEP, child_pid, NULL, NULL);
+		
+/*
 		if(single == 1 && flager==1){
 
 			
@@ -90,7 +130,8 @@ int main(int argc, char *argv[]){
 			}
 		if(flager ==0 || single == 0){
 			ptrace(PTRACE_CONT, child_pid, NULL, NULL);
-		}	
+		}
+        */	
 	}
 
 	}
