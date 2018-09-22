@@ -92,7 +92,7 @@ public:
     int brave_at;
     int brave_df;
     int brave_mf;
-    int brave_yellowkey;
+    int brave_yellowkey; //+10.
     int brave_bluekey;
     int brave_redkey;
     int brave_gold;
