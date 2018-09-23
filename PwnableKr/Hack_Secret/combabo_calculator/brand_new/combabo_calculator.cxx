@@ -7,51 +7,19 @@
 #include <unistd.h>
 using namespace std;
 
-#define eprintf(format, ...)                             \
-    fprintf(stderr, "\x1b[3%dm[%s:%d(%s)]\x1b[m" format, \
-        __LINE__ % 6 + 1, __FILE__, __LINE__,            \
-        __PRETTY_FUNCTION__, ##__VA_ARGS__)
-
-#define ewatchi(EXPR) eprintf(#EXPR " = %lld\n", (long long)(EXPR));
-#define ewatchx(EXPR) eprintf(#EXPR " = %llx\n", (long long)(EXPR));
-#define ewatchf(EXPR) eprintf(#EXPR " = %Lf\n", (long double)(EXPR));
-#define ewatcha_gen(EXPR, NNN, TYPE, TYPEFIX)                                 \
-    {                                                                         \
-        eprintf(#EXPR " = [%lld] {\n", (long long)(NNN));                     \
-        for (int __i__ = 0; __i__ < NNN; __i__ += 8) {                        \
-            for (int __j__ = 0; __j__ < 8 && __i__ + __j__ < NNN; __j__++)    \
-                fprintf(stderr, " %" TYPEFIX, (TYPE)((EXPR)[__i__ + __j__])); \
-            fprintf(stderr, "\n");                                            \
-        }                                                                     \
-        fprintf(stderr, "}\n");                                               \
-    }
-#define ewatcha(EXPR, NNN) ewatcha_gen(EXPR, NNN, long long, "5lld")
-#define ewatchax(EXPR, NNN) ewatcha_gen(EXPR, NNN, long long, "17llx")
-#define ewatchaf(EXPR, NNN) ewatcha_gen(EXPR, NNN, long double, "10.6Lf")
-#define ewatchs(EXPR) eprintf(#EXPR " = %s\n", (const char*)(EXPR));
-
-
-
-
-
 enum struct T:char { END, INT, PLUS, MINUS, MUL, DIV, LP, RP, ID, ASSIGN, EXIT, UPLUS, STR, UMINUS };
 
 typedef struct Token {
     char* checksum;
     char* str;
-    union { //wait, it's a union structure?.
+    union {
         int size;
         int value;
     };
     T type;
     Token(T type) : type(type) {};
-	Token(T type, int value) : value(value), type(type) {
-
-		eprintf("Token v %d %x %#x\n", type, value, str);
-	};
-	Token(T type, char* str) : checksum(str), str(str), size(strlen(str)), type(type) {
-		eprintf("Token %d %s %#x\n", type, str, str);
-	};
+    Token(T type, int value) : value(value), type(type) {};
+    Token(T type, char* str) : checksum(str), str(str), size(strlen(str)), type(type) {};
     ~Token() { if (type == T::ID || type == T::STR) free(str); }
 } *pToken;
 using sToken = shared_ptr<Token>;
@@ -63,31 +31,31 @@ class Lexer {
     pToken readStr();
     pToken readDigit();
 public:
-    Lexer(string &input) : pos(0), input(input) {}; //pos is initial str index poi.
+    Lexer(string &input) : pos(0), input(input) {};
     pToken nToken();
 };
 
-pToken Lexer::readDigit() { //this function will read until non-digit meet. -- 12345a
+pToken Lexer::readDigit() {
     auto i = 0;
     while (isdigit(input[pos])) i = i * 10 + input[pos++] - '0';
     if (i > 256) throw "does not support integer bigger than 256";
-    return new Token(T::INT, i); //assign a Token object with Type:INT & value int.
+    return new Token(T::INT, i);
 };
 
 pToken Lexer::readId() {
     auto limit = 0;
     auto start = pos;
-    while (isalnum(input[pos++])) if (++limit > 256) throw "does not support ID longer than 256"; //id is alphanum less than 256.
+    while (isalnum(input[pos++])) if (++limit > 256) throw "does not support ID longer than 256";
     if (!strncmp("exit", input.substr(start, pos--).c_str(), 4)) return new Token(T::EXIT);
-    char* str = (char*)calloc(pos - start + 1, 1); //alloc a space for ID str.
+    char* str = (char*)calloc(pos - start + 1, 1);
     if (!str) throw "Internal Error";
     strncpy(str, input.substr(start, pos).c_str(), pos - start);
-    return new Token(T::ID, str); //with a type and a value.
+    return new Token(T::ID, str);
 };
 
 pToken Lexer::readStr() {
     auto limit = 0;
-    auto start = ++pos; // ++ bypassed the first ".
+    auto start = ++pos;
     while (input[pos++] != '"') if (++limit > 256) throw "does not support string longer than 256";
     --pos;
     char* str = (char*)calloc(pos - start + 1, 1);
@@ -96,23 +64,23 @@ pToken Lexer::readStr() {
     return new Token(T::STR, str);
 };
 
-pToken Lexer::nToken() { //nextToken?.
-    while (input[pos] == ' ') pos++; //space splited.. if space , move on, if not, process.
-    if (pos == input.length()) return new Token(T::END); // if reach to the end.
-    if (isdigit(input[pos])) return readDigit(); //if meet first digit.
-    if (isalpha(input[pos])) return readId(); //if meet first alpha.
-    if (input[pos] == '+') return new Token(T::PLUS, input[pos++]);  //
-    if (input[pos] == '-') return new Token(T::MINUS, input[pos++]); //
-    if (input[pos] == '*') return new Token(T::MUL, input[pos++]);   //
-    if (input[pos] == '/') return new Token(T::DIV, input[pos++]);   //
-    if (input[pos] == '(') return new Token(T::LP, input[pos++]);    //
-    if (input[pos] == ')') return new Token(T::RP, input[pos++]);    //
-    if (input[pos] == '"') return readStr(); //meet with string.
+pToken Lexer::nToken() {
+    while (input[pos] == ' ') pos++;
+    if (pos == input.length()) return new Token(T::END);
+    if (isdigit(input[pos])) return readDigit();
+    if (isalpha(input[pos])) return readId();
+    if (input[pos] == '+') return new Token(T::PLUS, input[pos++]);
+    if (input[pos] == '-') return new Token(T::MINUS, input[pos++]);
+    if (input[pos] == '*') return new Token(T::MUL, input[pos++]);
+    if (input[pos] == '/') return new Token(T::DIV, input[pos++]);
+    if (input[pos] == '(') return new Token(T::LP, input[pos++]);
+    if (input[pos] == ')') return new Token(T::RP, input[pos++]);
+    if (input[pos] == '"') return readStr();
     if (input[pos] == '=') return new Token(T::ASSIGN, input[pos++]);
     throw "Lexer Error";
 };
 
-struct Node { //Node is sth. contains a token and a children node vector.
+struct Node {
     shared_ptr<Token>token;
     vector<shared_ptr<Node>>children;
     Node(sToken token) : token(token) {};
@@ -120,8 +88,8 @@ struct Node { //Node is sth. contains a token and a children node vector.
 using sNode = shared_ptr<Node>;
 
 class Parser {
-    shared_ptr<Lexer> lexer; //pointing to a lexer object with input initialized.
-    shared_ptr<Token> cur; // assigned with lexer->nToken return value.
+    shared_ptr<Lexer> lexer;
+    shared_ptr<Token> cur;
     void next(T);
     sNode factor();
     sNode term();
@@ -133,7 +101,7 @@ public:
 };
 
 void Parser::next(T type) {
-    if (cur->type == type) cur.reset(lexer->nToken()); //If cur->type is expected, cur update token.
+    if (cur->type == type) cur.reset(lexer->nToken());
     else throw "Parser Error";
 };
 
@@ -141,10 +109,10 @@ sNode Parser::factor() {
     auto node = make_shared<Node>(cur);
     auto osNode = make_shared<Node>(cur);
     switch (cur->type) {
-        case T::LP: //(
+        case T::LP:
             next(T::LP);
             node = expr();
-            next(T::RP); //)
+            next(T::RP);
         break;
         case T::PLUS:
         case T::MINUS:
@@ -214,7 +182,7 @@ sNode Parser::assign() {
 };
 
 sNode Parser::parse() {
-    auto result = assign(); // start parsing , finish right if cur->type != T::END
+    auto result = assign();
     if (cur->type != T::END) throw "Parser Error";
     return result;
 };
@@ -225,14 +193,19 @@ static struct Symbol {
     Symbol* next;
     Symbol(){};
     Symbol(char *str, sToken token) : token(token) {
-        id = (char*) calloc(strlen(str) + 1, 1); //Calloc an identifier as Symbol.
+        id = (char*) calloc(strlen(str) + 1, 1);
         if (!id) throw "Internal Error";
         strcpy(id, str);
     };
 } SymTab;
 
 void print(char *s, int n) {
-    if (n != fwrite(s, 1, n, stdout)) exit(0);
+
+    if (n != fwrite(s, 1, n, stdout)) 
+	{
+		printf("real output: %d\n", n);
+		exit(0);
+	}
 }
 
 void print(int n) {
@@ -286,7 +259,7 @@ sToken Calc::visitor(sNode node) {
      throw "Syntax Error";
 };
 
-sToken Calc::visitUnaryOp(sNode node) {  //Plus or Minus.
+sToken Calc::visitUnaryOp(sNode node) {
     auto result = 0;
     auto op = visitor(node->children[0]);
     if (op->type == T::INT) result = op->value;
@@ -295,7 +268,7 @@ sToken Calc::visitUnaryOp(sNode node) {  //Plus or Minus.
     return make_shared<Token>(T::INT, node->token->type == T::UPLUS ? +op->value : -op->value);
 };
 
-sToken Calc::visitBinaryOp(sNode node) { //+,-,*,/
+sToken Calc::visitBinaryOp(sNode node) {
     auto left = 0;
     auto right = 0;
     auto leftToken = visitor(node->children[0]);
@@ -316,10 +289,10 @@ sToken Calc::visitBinaryOp(sNode node) { //+,-,*,/
     exit(0);
 };
 
-sToken Calc::visitId(sNode node) { // find target id to access.
+sToken Calc::visitId(sNode node) {
     sToken result = nullptr;
     auto symbol = &SymTab;
-    while (symbol->next != &SymTab) {  //find target Symbol ID until searching the whole linked list.
+    while (symbol->next != &SymTab) {
         symbol = symbol->next;
         if (!strncmp(node->token->str, symbol->id, strlen(symbol->id))) {
             result = symbol->token;
@@ -330,22 +303,22 @@ sToken Calc::visitId(sNode node) { // find target id to access.
 };
 
 sToken Calc::visitAssign(sNode node) {
-    auto var = node->children[0]; //This Procedure assign child[1] to child[0].
+    auto var = node->children[0];
     auto value = visitor(node->children[1]);
     if (var->token->type != T::ID || !value) throw "Syntax Error";
-    if (auto variable = visitId(var)) { // if visited ID exists,
-        if (variable->type == T::STR && value->type == T::STR) { // if both string.
+    if (auto variable = visitId(var)) {
+        if (variable->type == T::STR && value->type == T::STR) {
             if (variable->size < value->size) variable->str = (char*)realloc(variable->str, value->size + 1);
             if (!variable->str) throw "Internal Error";
             variable->checksum = variable->str;
-            variable->size = strlen(variable->str); //wait.. the size hasn't been updated..?
+            variable->size = strlen(variable->str);
             strcpy(variable->str, value->str);
         } else if (variable->type == T::INT && value->type == T::STR) variable->value = atoi(value->str);
         else variable->value = value->value;
-    } else { //create a new variable.
+    } else {
         auto symbol = &SymTab;
         while (symbol->next != &SymTab) symbol = symbol->next;
-        symbol->next = new Symbol(var->token->str, value); // a variable is a symbol..
+        symbol->next = new Symbol(var->token->str, value);
         symbol->next->next = &SymTab;
     }
     return value;
@@ -362,7 +335,7 @@ int main() {
     signal(SIGALRM, 0);
     setvbuf(stdout, NULL, _IONBF, 0);
     cout << "combabo calculator" << endl;
-    sleep(3);
+    sleep(0);
     while (true) {
         string input;
         alarm(0);

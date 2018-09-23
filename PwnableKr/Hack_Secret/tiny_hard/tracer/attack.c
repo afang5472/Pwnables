@@ -12,6 +12,7 @@
 //comment: what a nice day, isn't it?!
 
 unsigned int syscall_addr = 0x55591c97;
+unsigned int global_esp = 0x0;
 
 int main(int argc, char *argv[]){
 
@@ -48,6 +49,9 @@ int main(int argc, char *argv[]){
 		printf("ecx is %lx\n", regs.ebx);
 		printf("edx is %lx\n", regs.ebx);
 		printf("esp is %lx\n", regs.esp);
+		if(single == 0){
+			global_esp = regs.esp - 0x1000;
+		}
 		puts("g? ------------- ");
 		scanf("%d", &flager);
 		getchar();
@@ -58,7 +62,7 @@ int main(int argc, char *argv[]){
 			//control to read in.
 			regs.eax = 0x3; //read syscall.
 			regs.ebx = 0;
-			regs.ecx = regs.esp;
+			regs.ecx = global_esp;
 			regs.edx = 0xf;
 
 			regs.eip = syscall_addr;
@@ -84,7 +88,7 @@ int main(int argc, char *argv[]){
 			
 			//Set new args.
 			regs.eax = 0x5; //open syscall.
-			regs.ebx = regs.esp;
+			regs.ebx = global_esp;
 			regs.ecx = 0;
 			regs.eip = syscall_addr;
 			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);
@@ -95,7 +99,7 @@ int main(int argc, char *argv[]){
 			//Set new args.
 			regs.ebx = regs.eax;
 			regs.eax = 0x3; //read syscall.
-			regs.ecx = regs.esp;
+			regs.ecx = global_esp;
 			regs.edx = 0x50;
 			regs.eip = syscall_addr;
 			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);
@@ -106,7 +110,7 @@ int main(int argc, char *argv[]){
 			//Set new args.
 			regs.eax = 0x4; //write syscall.
 			regs.ebx = 0x1;
-			regs.ecx = regs.esp;
+			regs.ecx = global_esp;
 			regs.edx = 0x50;
 			regs.eip = syscall_addr;
 			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);

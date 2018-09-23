@@ -11,7 +11,7 @@
 //author : afang
 //comment: what a nice day, isn't it?!
 
-unsigned int syscall_addr = 0x2aa6ffe7;
+unsigned int syscall_addr = 0x55591c97;
 
 int main(int argc, char *argv[]){
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
 			return;
 		} */
 		char *envp[] = {NULL};
-		execl(filename, "\xe7\xff\xa6\x2a", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A",  NULL, envp);
+		execl(filename, "\x97\x1c\x59\x55", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A",  NULL, envp);
 	}else{
 		while(1){
 		wait(&wait_status);
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
 			regs.eax = 0x3; //read syscall.
 			regs.ebx = 0;
 			regs.ecx = regs.esp;
-			regs.edx = 0x4;
+			regs.edx = 0x45;
 
 			regs.eip = syscall_addr;
 			single = 1;
@@ -80,39 +80,22 @@ int main(int argc, char *argv[]){
 		//Single Step going.
 	if(flager == 1 && single == 1){
 
-			printf("execution reach before open.\n");
+			printf("execution reach before execve.\n");
 			
 			//Set new args.
-			regs.eax = 0x5; //open syscall.
+			regs.eax = 0xb; //execve syscall.
 			regs.ebx = regs.esp;
 			regs.ecx = 0;
+			regs.edx = 0;
 			regs.eip = syscall_addr;
 			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);
 		}
-
-	if(flager == 2 && single == 1){
-
-			//Set new args.
-			regs.ebx = regs.eax;
-			regs.eax = 0x3; //read syscall.
-			regs.ecx = regs.esp;
-			regs.edx = 0x50;
-			regs.eip = syscall_addr;
-			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);
-		}
-
-	if(flager == 3 && single == 1){
-
-			//Set new args.
-			regs.eax = 0x4; //write syscall.
-			regs.ebx = 0x1;
-			regs.ecx = regs.esp;
-			regs.edx = 0x50;
-			regs.eip = syscall_addr;
-			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);
-		}
-
+	if(flager == 0 && single == 1){
 		ptrace(PTRACE_SINGLESTEP, child_pid, NULL, NULL);
+	}
+	else{
+		ptrace(PTRACE_CONT, child_pid, NULL, NULL);
+	}
 		
 /*
 		if(single == 1 && flager==1){

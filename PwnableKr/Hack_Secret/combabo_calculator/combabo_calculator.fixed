@@ -365,7 +365,7 @@ int main() {
     sleep(3);
     while (true) {
         string input;
-        alarm(0);
+        alarm(3);
         print((char*)">>> ", 4);
         getline(cin, input);
         try {
