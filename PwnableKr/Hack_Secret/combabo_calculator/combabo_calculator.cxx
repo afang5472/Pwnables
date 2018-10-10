@@ -7,6 +7,33 @@
 #include <unistd.h>
 using namespace std;
 
+#define eprintf(format, ...)                             \
+    fprintf(stderr, "\x1b[3%dm[%s:%d(%s)]\x1b[m" format, \
+        __LINE__ % 6 + 1, __FILE__, __LINE__,            \
+        __PRETTY_FUNCTION__, ##__VA_ARGS__)
+
+#define ewatchi(EXPR) eprintf(#EXPR " = %lld\n", (long long)(EXPR));
+#define ewatchx(EXPR) eprintf(#EXPR " = %llx\n", (long long)(EXPR));
+#define ewatchf(EXPR) eprintf(#EXPR " = %Lf\n", (long double)(EXPR));
+#define ewatcha_gen(EXPR, NNN, TYPE, TYPEFIX)                                 \
+    {                                                                         \
+        eprintf(#EXPR " = [%lld] {\n", (long long)(NNN));                     \
+        for (int __i__ = 0; __i__ < NNN; __i__ += 8) {                        \
+            for (int __j__ = 0; __j__ < 8 && __i__ + __j__ < NNN; __j__++)    \
+                fprintf(stderr, " %" TYPEFIX, (TYPE)((EXPR)[__i__ + __j__])); \
+            fprintf(stderr, "\n");                                            \
+        }                                                                     \
+        fprintf(stderr, "}\n");                                               \
+    }
+#define ewatcha(EXPR, NNN) ewatcha_gen(EXPR, NNN, long long, "5lld")
+#define ewatchax(EXPR, NNN) ewatcha_gen(EXPR, NNN, long long, "17llx")
+#define ewatchaf(EXPR, NNN) ewatcha_gen(EXPR, NNN, long double, "10.6Lf")
+#define ewatchs(EXPR) eprintf(#EXPR " = %s\n", (const char*)(EXPR));
+
+
+
+
+
 enum struct T:char { END, INT, PLUS, MINUS, MUL, DIV, LP, RP, ID, ASSIGN, EXIT, UPLUS, STR, UMINUS };
 
 typedef struct Token {
@@ -18,8 +45,13 @@ typedef struct Token {
     };
     T type;
     Token(T type) : type(type) {};
-    Token(T type, int value) : value(value), type(type) {};
-    Token(T type, char* str) : checksum(str), str(str), size(strlen(str)), type(type) {};
+	Token(T type, int value) : value(value), type(type) {
+
+		eprintf("Token v %d %x %#x\n", type, value, str);
+	};
+	Token(T type, char* str) : checksum(str), str(str), size(strlen(str)), type(type) {
+		eprintf("Token %d %s %#x\n", type, str, str);
+	};
     ~Token() { if (type == T::ID || type == T::STR) free(str); }
 } *pToken;
 using sToken = shared_ptr<Token>;
@@ -333,7 +365,7 @@ int main() {
     sleep(3);
     while (true) {
         string input;
-        alarm(3);
+        alarm(0);
         print((char*)">>> ", 4);
         getline(cin, input);
         try {

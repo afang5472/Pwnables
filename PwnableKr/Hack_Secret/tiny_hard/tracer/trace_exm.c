@@ -60,7 +60,7 @@ int main(int argc, char *argv[]){
 			puts("syscall?");
 			unsigned int syscall_eip = 0;
 			scanf("%u", &syscall_eip);
-			regs.eip = syscall_eip + 0xfe7;
+			regs.eip = syscall_eip + 0xbc6;
 			single = 0;
 
 			ptrace(PTRACE_SETREGS, child_pid, NULL, &regs); //test control eip.

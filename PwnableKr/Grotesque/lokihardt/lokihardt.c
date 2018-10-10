@@ -50,10 +50,10 @@ void Alloc(unsigned int idx){
     unsigned int rlen;
     if(refCount==0){
         // According to some research papers, random-heap-padding mitigates heap exploits!
-        rlen = abs((rand()*1337) % 1024);
-        randomPadding = malloc( rlen );
+        rlen = abs((rand()*1337) % 1024); //0-1023
+        randomPadding = malloc( rlen ); //malloc padding
         memset(randomPadding, 0xcc, rlen);
-        theOBJ = AllocOBJ();
+        theOBJ = AllocOBJ(); //a single OBJ.
     }
     ArrayBuffer[idx] = theOBJ;
     refCount++;
