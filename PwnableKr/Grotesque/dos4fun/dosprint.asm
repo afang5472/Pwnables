@@ -1,19 +1,21 @@
 bits 16
 
+
 ; open file handle
 mov ah, 3Dh ; open file
 mov al, 0h  ; 0 read file
 ; dx contains ptr to filename
 ;mov dx, file
+mov dx, 1C2h ;dx point to filename
 
-int 21h
+int 21h ;open now!
 
 ; read A:\FLAG.TXT
 mov bx, ax ; handle we get when opening a file
 mov ah, 3Fh ; read file
 mov cx, 20 ; number of bytes to read
 ; dx contains pointer to buffer
-int 21h
+int 21h ; read now!
 
 ; let's try to use the fancy print
 ;pop dx
