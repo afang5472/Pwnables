@@ -12,7 +12,10 @@ int main(){
 
 	char *ptr = (char*)malloc(0x50);
 	fprintf(stderr, "allocate at : %p\n", ptr);	
-	realloc(ptr, 0);
+	getchar();
+	printf("now realloc.\n");
+	realloc(ptr, 0); //realloc to zero is same as free.
+	getchar();
 	fprintf(stderr, "now, ptr is pointing at : %p\n", ptr);
 	return 0;
 }
