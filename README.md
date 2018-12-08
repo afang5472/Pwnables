@@ -22,5 +22,5 @@ This now including:
 
 My blog
 -----
-[afang.xyz](http://afang.xyz) 分享一些比较神奇的Pwnable~.  
-[canyouhugme.com](http://canyouhugme.com) Same refer~
+[afang.xyz](http://afang.xyz) Interesting Pwnables sharing blog~ 
+[canyouhugme.com](http://canyouhugme.com) Same refer as above~
