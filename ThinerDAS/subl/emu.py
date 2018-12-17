@@ -189,7 +189,7 @@ class Environ(object):
                 value, self.memory[idx][off], address, n)
 
     def address_translate(self, address):
-        addr_type = (address >> 22) & ((1 << 6)-1)
+        addr_type = (address >> 22) & ((1 << 6)-1) # check addr_type
         base_addr = self.read_abs(addr_type << 2, 4, False)
         return (base_addr+address) & ((1 << 22)-1)
 
