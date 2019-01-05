@@ -1,6 +1,6 @@
 # how2pwn
 
-Well, I think only log pwnables from CTFs is *really not* enough.  
+Well, I think only logging pwnables of all kinds of CTFs is *really not* enough.  
 The important thing here is categorize.
 So I try to split these pwnables into relevant district based on  
 the key point to the solution which belongs to.
