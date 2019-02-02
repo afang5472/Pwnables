@@ -443,7 +443,7 @@ static void run_forever(struct control_block* cb)
     int time_limit = 0x100000 + (rand_integer() & 0xfffff);
     for (int i = 0; i < time_limit; i++) {
 		if(i % 0x10000==0){
-			printf("current - %d\n", i);
+			printf("current - 0x%x\n", i);
 		}
         step(cb);
     }

