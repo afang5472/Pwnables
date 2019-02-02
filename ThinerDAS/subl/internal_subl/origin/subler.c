@@ -155,7 +155,7 @@ static void init_env(void)
     // normal prctl protection
     EXIT_ON_FAIL(prctl(PR_SET_DUMPABLE, 0) < 0);
     EXIT_ON_FAIL(prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) < 0);
-    //alarm(90);
+    alarm(90);
     struct rlimit rlim;
     // don't check error, since there may be certain limit set up
     rlim.rlim_cur = rlim.rlim_max = 0;
@@ -297,7 +297,7 @@ static void init_cb(struct control_block* cb)
     cb->jcycle = 0;
     // text section
     WD aslr = rand_integer() & 0xff;
-    WD code_base = cb->pc = 0x200000; //we disable aslr here.
+    WD code_base = cb->pc = 0x200000 //| (aslr << 12);
     //memcpy(cb->memory + (cb->pc >> 2), binary, sizeof(binary));
     memcpy(cb->memory + (code_base >> 2), rom_content, romsz);
 }
@@ -309,7 +309,6 @@ static const WD AMSK = (1 << 22) - 1;
 
 static WD get_subword(WD word, WD addr, int n)
 {
-	//addr must be 0, 1, 2 or 3.
     addr = addr & 3 & (-n);
     return (word >> (8 * addr)) & ((1l << (8 * n)) - 1);
 }
@@ -336,30 +335,18 @@ static WD read_dma(const struct control_block* cb, WD address, bool forced)
     //case 0:
     //    return 0;
     case 1:
-		//printf("trigger getpc\n");
         return cb->pc;
     case 4:
-		printf("trigger getcycle\n");
         return cb->cycle;
     case 5:
-		if(forced && !(address&3)){
-			printf("trigger getinput\n");
-		}
-        WD result = forced && !(address & 3) ? sl_getchar() : 0;
-		
-		forced&&!(address&3)?getchar():0; //eat carriage return.
-		return result;
+        return forced && !(address & 3) ? sl_getchar() : 0;
     case 6:
-		printf("trigger randint\n");
         return sl_randint();
     case 7:
-		printf("trigger gettime\n");
         return sl_gettime();
     case 8:
-		printf("trigger getjcycle\n");
         return cb->jcycle;
     case 9:
-		printf("trigger getmemstat\n");
         return cb->memstat;
     default:
         return 0;
@@ -380,37 +367,26 @@ static void write_dma(struct control_block* cb, WD address, int n, WD value)
         WD v = write_subword(value, read, address, n) ^ orig;
         cb->flag_key = v * inv_list[code];
     } else if (address == 5 * 4) {
-		printf("putchar: \n");
         sl_putchar(value & 0xff);
-		putchar('\n');
     } else if (address == 10 * 4) {
-		printf("sleeping: \n");
         sl_sleep(value);
     } else if (address == 11 * 4) {
-		printf("halting: \n");
         sl_halt(value);
     }
-	//putchar or halt or sleep or encrypt the flag.
 }
 
 // read abs mem, input must be absolute
 
 static WD read_abs(const struct control_block* cb, WD address, int n, bool forced)
 {
-	//first parameter: control block
-	//second parameter: target address
-	
     address &= AMSK;
     WD res = 0;
     if (address < 128) {
         res = read_dma(cb, address, forced);
     } else {
         WD off = (address >> 2) & ((1 << 20) - 1);
-		//get memory value at offset.
         res = cb->memory[off];
     }
-
-	//do some weird shifting, only.
     return get_subword(res, address, n);
 }
 
@@ -432,66 +408,27 @@ static void write_abs(struct control_block* cb, WD address, int n, WD value)
 
 static WD addr_translate(const struct control_block* cb, WD address)
 {
-	//extract base_addr according to addr_type?
     WD addr_type = (address >> 22) & ((1 << 6) - 1);
     WD base_addr = read_abs(cb, addr_type << 2, 4, false);
     return (base_addr + address) & AMSK;
 }
 
 // single step of vm
-// grab an instrcution and executes it.
-// repeatedly.
 
 static void step(struct control_block* cb)
 {
     WD pc = cb->pc;
-	//printf("current pc ->: 0x%08x\n", pc & AMSK);
-	//printf("inspect memory 0: 0x%08x\n", *(cb->memory));
-
-	// AMSK == (1<<22) - 1 .
-	// AMSK == 0x3fffff
-	
-	// subl [op1], [op2] ,[op3] pc->, pc+4-> , pc+8->
     WD op_a = read_abs(cb, pc & AMSK, 4, false);
     WD op_b = read_abs(cb, (pc + 4) & AMSK, 4, false);
     WD o_op_c = read_abs(cb, (pc + 8) & AMSK, 4, false);
-	//printf("current op1 ->: 0x%08x\n", op_a); //be careful, op shall be relevant addressing..
-	//printf("current op2 ->: 0x%08x\n", op_b);
-	//printf("current op3 ->: 0x%08x\n", o_op_c);
-
-	//pc move forward 12 bytes.
     WD new_pc = cb->pc = (pc + 12) & AMSK;
-    int n = 0xf & (0x1244 >> ((o_op_c & 3) * 4)); //n is relevant to address convertion maybe ...
-	//clear lower 2 bit.
+    int n = 0xf & (0x1244 >> ((o_op_c & 3) * 4));
     WD op_c = o_op_c & -4;
     WD ph_a = addr_translate(cb, op_a);
     WD ph_b = addr_translate(cb, op_b);
     WD ph_c = addr_translate(cb, op_c);
-
-	//extract value from specified address.
     WD A = read_abs(cb, ph_a, n, false);
-
-	//trigger input only if second op_value is 0x14.
     WD B = read_abs(cb, ph_b, n, true);
-
-	//ph_a is op a's address or dma switcher 
-	//ph_b is op b's address or dma switcher(whether bigger than 0x80)
-	//ph_c is target jumping address..
-	//aka if [ph_a] < [ph_b] then pc reset from (ph_a + 12) to ph_c.
-	printf("\e[31mcurrent_pc: 0x%08x\n", cb->pc-12);
-	printf("\e[32msubl [0x%08x]->0x%08x, [0x%08x]->0x%08x, [0x%08x](branch), [0x%08x](pc+12)\n", ph_a, A, ph_b, B, ph_c, new_pc);
-	
-	//printf("if branch? : ");
-	//if target address is dma, process it as expected. 
-	//else we deref the address>
-	//TODO:
-	if(A<B){
-		//if A<B, branch 
-		printf("next_pc pointing at: 0x%08x\n", ph_c);	
-	}else{
-		printf("next_pc pointing at: 0x%08x\n", new_pc);
-	}	
-
     write_abs(cb, ph_a, n, (A - B) & ((1l << (8 * n)) - 1));
     cb->cycle += 1;
     if (ph_c != new_pc && A < B) {
@@ -503,9 +440,7 @@ static void step(struct control_block* cb)
 
 static void run_forever(struct control_block* cb)
 {
-	//set step looping count limitation
     int time_limit = 0x100000 + (rand_integer() & 0xfffff);
-	printf("length of code: %d\n", romsz);
     for (int i = 0; i < time_limit; i++) {
         step(cb);
     }

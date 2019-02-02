@@ -1,3 +1,3 @@
 #!/bin/bash 
 
-gcc -o ./debugger2 ./debugger2.c
+gcc -o ./$2 ./$1

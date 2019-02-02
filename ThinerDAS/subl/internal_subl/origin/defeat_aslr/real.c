@@ -339,11 +339,12 @@ static WD read_dma(const struct control_block* cb, WD address, bool forced)
 		//printf("trigger getpc\n");
         return cb->pc;
     case 4:
-		printf("trigger getcycle\n");
+		//printf("trigger getcycle\n");
         return cb->cycle;
     case 5:
 		if(forced && !(address&3)){
-			printf("trigger getinput\n");
+		//	printf("trigger getinput\n");
+		;
 		}
         WD result = forced && !(address & 3) ? sl_getchar() : 0;
 		
@@ -478,8 +479,8 @@ static void step(struct control_block* cb)
 	//ph_b is op b's address or dma switcher(whether bigger than 0x80)
 	//ph_c is target jumping address..
 	//aka if [ph_a] < [ph_b] then pc reset from (ph_a + 12) to ph_c.
-	printf("\e[31mcurrent_pc: 0x%08x\n", cb->pc-12);
-	printf("\e[32msubl [0x%08x]->0x%08x, [0x%08x]->0x%08x, [0x%08x](branch), [0x%08x](pc+12)\n", ph_a, A, ph_b, B, ph_c, new_pc);
+	//printf("\e[31mcurrent_pc: 0x%08x\n", cb->pc-12);
+	//printf("\e[32msubl [0x%08x]->0x%08x, [0x%08x]->0x%08x, [0x%08x](branch), [0x%08x](pc+12)\n", ph_a, A, ph_b, B, ph_c, new_pc);
 	
 	//printf("if branch? : ");
 	//if target address is dma, process it as expected. 
